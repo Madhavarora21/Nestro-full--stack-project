@@ -9,9 +9,24 @@ export default async function Page() {
     console.log(category)
 
     // ERROR HANDLE
-    if (category?.success === false) {
-        throw new Error(category?.message || "Failed to fetch rooms");
-    }
+    // ERROR HANDLE
+if (category?.success === false) {
+    console.log("Category API Error:", category?.message);
+
+    return (
+        <div className="min-h-screen p-6 flex items-center justify-center">
+            <div className="text-center">
+                <h2 className="text-xl font-bold text-red-600">
+                    Failed to load categories
+                </h2>
+
+                <p className="mt-2 text-sm text-gray-500">
+                    {category?.message || "Unable to fetch categories"}
+                </p>
+            </div>
+        </div>
+    );
+}
 
     return (
         <div className="min-h-screen p-4 lg:p-6">
