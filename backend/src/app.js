@@ -17,7 +17,8 @@ server.use(express.json());
 server.use(cors({
     origin: [
         "http://localhost:3000",
-        "https://nestro-full-stack-project.vercel.app"
+        "https://nestro-full-stack-project.vercel.app",
+        "https://nestro-full-stack-project-k696diazq.vercel.app"
     ],
     credentials: true
 }));
