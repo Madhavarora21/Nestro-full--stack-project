@@ -14,15 +14,21 @@ import cookieParser from 'cookie-parser';
 
 server.use(cookieParser())
 server.use(express.json());
-server.use(cors({ origin: "http://localhost:3000", credentials: true }));
+server.use(cors({
+    origin: [
+        "http://localhost:3000",
+        "https://nestro-full-stack-project.vercel.app"
+    ],
+    credentials: true
+}));
 
 server.use("/api/category", categoryRouter)
 server.use("/api/room-type", roomRouter)
 server.use("/api/product", productRouter)
 server.use("/api/user", userRouter);
-server.use("api/cart",cartRouter);
+server.use("/api/cart",cartRouter);
 
 connectDB()
 server.listen(process.env.PORT, () => {
-    console.log("Server is running on port 5000")
+console.log(`Server is running on port ${process.env.PORT}`)
 })
