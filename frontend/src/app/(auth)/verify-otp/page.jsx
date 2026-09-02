@@ -1,4 +1,5 @@
-    "use client";
+
+"use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useRef, useState } from "react";
@@ -6,165 +7,81 @@ import { toast } from "sonner";
 import { client } from "@/utils/helper";
 
 function OTPVerifyContent() {
-
     const router = useRouter();
-
     const searchParams = useSearchParams();
-
     const email = searchParams.get("email");
 
-
-    const [otp, setOtp] = useState(
-        new Array(6).fill("")
-    );
-
-
+    const [otp, setOtp] = useState(new Array(6).fill(""));
     const [error, setError] = useState("");
-
     const [loading, setLoading] = useState(false);
-
 
     const inputRefs = useRef([]);
 
-
-
-
     useEffect(() => {
-
         if (!email) {
             router.push("/register");
+            return;
         }
-
 
         inputRefs.current[0]?.focus();
-
-    }, []);
-
-
-
-
-
-
+    }, [email, router]);
 
     function handleChange(value, index) {
-
         if (!/^[0-9]?$/.test(value)) return;
 
-
-
         const copy = [...otp];
-
         copy[index] = value;
 
-
         setOtp(copy);
-
         setError("");
 
-
-
         if (value && index < 5) {
-
             inputRefs.current[index + 1]?.focus();
-
         }
-
     }
 
-
-
-
-
-
-
-
     function handleKeyDown(e, index) {
-
         if (
             e.key === "Backspace" &&
             !otp[index] &&
             index > 0
         ) {
-
             inputRefs.current[index - 1]?.focus();
-
         }
-
     }
 
-
-
-
-
-
-
-
     function handlePaste(e) {
-
         e.preventDefault();
-
 
         const value = e.clipboardData
             .getData("text")
+            .replace(/\D/g, "")
             .slice(0, 6);
 
-
-
-        if (!/^\d+$/.test(value)) return;
-
-
+        if (!value) return;
 
         const arr = value.split("");
-
-
 
         setOtp([
             ...arr,
             ...new Array(6 - arr.length).fill("")
         ]);
 
-
-
         inputRefs.current[
-            value.length - 1
+            Math.min(value.length - 1, 5)
         ]?.focus();
-
     }
 
-
-
-
-
-
-
-
-
     async function verifyOTP() {
-
-
         const finalOTP = otp.join("");
 
-
-
         if (finalOTP.length !== 6) {
-
-            setError(
-                "Please enter 6 digit OTP"
-            );
-
+            setError("Please enter 6 digit OTP");
             return;
-
         }
 
-
-
-
-
         try {
-
             setLoading(true);
-
-
 
             const response = await client.post(
                 "user/verify-otp",
@@ -174,141 +91,64 @@ function OTPVerifyContent() {
                 }
             );
 
-
-
-
             if (response.data.success) {
-
-
-                toast.success(
-                    response.data.message
-                );
-
-
+                toast.success(response.data.message);
                 router.push("/login");
-
             }
-
-
-
-        }
-        catch (error) {
-
-
+        } catch (error) {
             toast.error(
                 error.response?.data?.message ||
                 "Internal Server Error"
             );
-
-        }
-        finally {
-
+        } finally {
             setLoading(false);
-
         }
-
-
     }
-
-
-
-
-
-
-
 
     function resendOTP() {
-
-
-        setOtp(
-            new Array(6).fill("")
-        );
-
-
+        setOtp(new Array(6).fill(""));
         setError("");
 
-
-        toast.success(
-            "OTP resent successfully"
-        );
-
+        toast.success("OTP resent successfully");
 
         inputRefs.current[0]?.focus();
-
     }
 
-
-
-
-
-
-
-
-
-
     return (
-
         <div className="min-h-screen flex items-center justify-center bg-[#f8f5f1] px-5">
-
-
             <div className="bg-white shadow rounded-2xl p-8 max-w-md w-full text-center">
-
 
                 <h1 className="text-3xl font-semibold">
                     Verify OTP
                 </h1>
 
-
-
                 <p className="text-gray-500 mt-3">
                     Enter 6 digit OTP
                 </p>
-
-
-
-
 
                 <div
                     onPaste={handlePaste}
                     className="flex gap-3 justify-center mt-10"
                 >
-
-
-                    {
-                        otp.map((item, index) => (
-
-
-                            <input
-
-                                key={index}
-
-                                ref={el =>
-                                    inputRefs.current[index] = el
-                                }
-
-
-                                value={item}
-
-
-                                maxLength={1}
-
-
-                                onChange={e =>
-                                    handleChange(
-                                        e.target.value,
-                                        index
-                                    )
-                                }
-
-
-                                onKeyDown={e =>
-                                    handleKeyDown(
-                                        e, index
-                                    )
-                                }
-
-
-                                className="
+                    {otp.map((item, index) => (
+                        <input
+                            key={index}
+                            ref={(el) =>
+                                (inputRefs.current[index] = el)
+                            }
+                            value={item}
+                            maxLength={1}
+                            inputMode="numeric"
+                            onChange={(e) =>
+                                handleChange(
+                                    e.target.value,
+                                    index
+                                )
+                            }
+                            onKeyDown={(e) =>
+                                handleKeyDown(e, index)
+                            }
+                            className="
                                 w-12 h-14
                                 text-xl
                                 text-center
@@ -317,100 +157,62 @@ function OTPVerifyContent() {
                                 outline-none
                                 focus:ring-2
                                 focus:ring-[#93633e]
-                                "
-
-                            />
-
-
-                        ))
-                    }
-
-
+                            "
+                        />
+                    ))}
                 </div>
 
-
-
-
-
-
-                {
-                    error &&
+                {error && (
                     <p className="text-red-500 mt-4">
                         {error}
                     </p>
-                }
-
-
-
-
-
-
+                )}
 
                 <button
-
                     onClick={verifyOTP}
-
                     disabled={
                         loading ||
                         otp.join("").length !== 6
                     }
-
-
                     className="
-                    w-full
-                    mt-8
-                    py-4
-                    rounded-xl
-                    bg-[#93633e]
-                    text-white
-                    disabled:opacity-50
+                        w-full
+                        mt-8
+                        py-4
+                        rounded-xl
+                        bg-[#93633e]
+                        text-white
+                        disabled:opacity-50
                     "
-
                 >
-
-                    {
-                        loading
-                            ? "Verifying..."
-                            : "Verify OTP"
-                    }
-
-
+                    {loading
+                        ? "Verifying..."
+                        : "Verify OTP"}
                 </button>
-
-
-
-
-
 
                 <button
-
                     onClick={resendOTP}
-
                     className="
-                    mt-6
-                    text-[#93633e]
+                        mt-6
+                        text-[#93633e]
                     "
-
                 >
-
                     Resend OTP
-
                 </button>
 
-
-
-
             </div>
-
-
         </div>
-
     );
-
 }
+
 export default function OTPVerify() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense
+            fallback={
+                <div className="min-h-screen flex items-center justify-center">
+                    Loading...
+                </div>
+            }
+        >
             <OTPVerifyContent />
         </Suspense>
     );
