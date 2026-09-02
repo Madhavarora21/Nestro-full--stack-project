@@ -1,11 +1,11 @@
     "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useRef, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { client } from "@/utils/helper";
 
-export default function OTPVerify() {
+function OTPVerifyContent() {
 
     const router = useRouter();
 
@@ -407,4 +407,11 @@ export default function OTPVerify() {
 
     );
 
+}
+export default function OTPVerify() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <OTPVerifyContent />
+        </Suspense>
+    );
 }

@@ -8,11 +8,6 @@ import ProductStatus from "@/components/admin/ProductStatus";
 export default async function Page() {
     const product = await fetchProduct();
 
-    // ERROR HANDLE
-    if (product?.success === false) {
-        throw new Error(product?.message || "Failed to fetch Products");
-    }
-
     return (
         <div className="min-h-screen p-4 lg:p-6">
 
@@ -21,12 +16,16 @@ export default async function Page() {
                 title="Products"
                 path="/admin/product/add"
             />
+
             {/* MAIN CARD */}
             <div className="overflow-hidden rounded-[28px] border border-gray-200 bg-white min-h-87.5 shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
+
                 {/* FILTER */}
                 <TableFilter />
+
                 {/* TABLE HEADER */}
                 <div className="hidden lg:grid grid-cols-12 border-b border-gray-100 bg-gray-50 px-6 py-4">
+
                     <div className="col-span-1">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                             Thumbnail
@@ -77,7 +76,9 @@ export default async function Page() {
                     {product?.data?.length === 0 ? (
 
                         <div className="flex min-h-75 items-center justify-center">
+
                             <div className="text-center">
+
                                 <h2 className="text-2xl font-bold text-gray-800">
                                     No Products Found
                                 </h2>
@@ -85,12 +86,15 @@ export default async function Page() {
                                 <p className="mt-2 text-sm text-gray-500">
                                     There are no products available right now.
                                 </p>
+
                             </div>
+
                         </div>
 
                     ) : (
 
                         product?.data?.map((item, index) => (
+
                             <div
                                 key={item._id || index}
                                 className="grid grid-cols-1 gap-4 border-b border-gray-100 px-6 py-5 transition-all duration-300 hover:bg-gray-50 lg:grid-cols-12 lg:items-center"
@@ -116,6 +120,7 @@ export default async function Page() {
                                         </p>
 
                                         <div className="mt-2 flex items-center gap-2">
+
                                             <span className="font-semibold text-green-600">
                                                 ₹{item.salePrice}
                                             </span>
@@ -127,6 +132,7 @@ export default async function Page() {
                                             <span className="text-xs font-medium text-red-500">
                                                 {item.discount}% OFF
                                             </span>
+
                                         </div>
 
                                     </div>
@@ -135,11 +141,13 @@ export default async function Page() {
 
                                 {/* THUMBNAIL */}
                                 <div className="hidden lg:flex lg:col-span-1">
+
                                     <img
                                         src={item.thumbnail}
                                         alt={item.name}
                                         className="h-14 w-14 rounded-xl border object-cover"
                                     />
+
                                 </div>
 
                                 {/* PRODUCT NAME */}
@@ -183,10 +191,12 @@ export default async function Page() {
 
                                 {/* STATUS */}
                                 <div className="lg:col-span-1">
+
                                     <StatusBtn
                                         status={item.status}
                                         path={`product/status-update/${item._id}`}
                                     />
+
                                 </div>
 
                                 {/* FLAGS */}
@@ -233,6 +243,7 @@ export default async function Page() {
                                 </div>
 
                             </div>
+
                         ))
 
                     )}
