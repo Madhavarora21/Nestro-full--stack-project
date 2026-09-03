@@ -92,8 +92,8 @@ const token = generateToken(user._id);
 res.cookie("jwt", token, {
     maxAge: 900000,
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
 });
         return sendSuccess(res, "Login successful", { user:user });
     } catch (error) {
