@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { client } from "@/utils/helper";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -16,6 +16,19 @@ import Link from "next/link";
 
 export default function Page() {
     const router = useRouter();
+    useEffect(() => {
+        async function checkIfLoggedIn() {
+            try {
+                const res = await client.get("user/profile");
+                if (res.data.success) {
+                    router.push("/");
+                }
+            } catch (err) {
+                // not logged in, login page pe hi rehne do
+            }
+        }
+        checkIfLoggedIn();
+    }, []);
 
     const [activeTab, setActiveTab] = useState("signin");
 
