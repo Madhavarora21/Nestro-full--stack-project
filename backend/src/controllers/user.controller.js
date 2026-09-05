@@ -95,7 +95,7 @@ res.cookie("jwt", token, {
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
 });
-        return sendSuccess(res, "Login successful", { user:user });
+        return sendSuccess(res, "Login successful", { user:user, token:token });
     } catch (error) {
         console.log(error, "error")
         sendServerError(res, "Internal Server Error")

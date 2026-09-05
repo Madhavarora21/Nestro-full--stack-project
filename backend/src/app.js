@@ -13,7 +13,7 @@ import cartRouter from './routers/cart.router.js'
 import cookieParser from 'cookie-parser';
 
 server.use(cookieParser())
-server.use(express.json());
+server.use(express.json()); 
 server.use(cors({
     origin: [
         "http://localhost:3000",
