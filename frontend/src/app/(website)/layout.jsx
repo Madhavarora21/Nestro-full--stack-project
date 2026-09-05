@@ -3,7 +3,7 @@ import "../globals.css";
 import Header from "@/components/website/Header";
 import ConditionalFooter from "@/components/website/ConditionalFooter";
 import StoreProvider from "@/redex/StoreProvider"; 
-import { getProfile } from "@/utils/apiServer";
+// import { getProfile } from "@/utils/apiServer";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -20,7 +20,7 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-  const getMe=await getProfile();
+  // const getMe=await getProfile();
   return (
     <html
       lang="en"
@@ -28,7 +28,7 @@ export default async function RootLayout({ children }) {
     >
       <body className="min-h-screen flex flex-col overflow-x-hidden bg-[#F8F5F1]">
         <StoreProvider>
-          <Header user={getMe.data}/>
+          <Header />
           <main className="flex-1">{children}</main> 
           <ConditionalFooter />
         </StoreProvider>

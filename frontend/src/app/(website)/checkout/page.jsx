@@ -1,4 +1,8 @@
-import React from 'react'
+"use client";
+
+import React, { useEffect, useState } from 'react'
+import { useRouter } from "next/navigation";
+import { client } from "@/utils/helper";
 import { BsCheckLg } from "react-icons/bs";
 import { GoDotFill } from "react-icons/go";
 import { MdArrowForward } from "react-icons/md";
@@ -9,6 +13,25 @@ import { TbShieldCheck } from "react-icons/tb";
 import Link from 'next/link';
 
 export default function Page() {
+    const router = useRouter();
+    const [checkingAuth, setCheckingAuth] = useState(true);
+
+    useEffect(() => {
+        async function checkAuth() {
+            try {
+                const res = await client.get("user/profile");
+                if (!res.data.success) {
+                    router.push("/login");
+                } else {
+                    setCheckingAuth(false);
+                }
+            } catch (err) {
+                router.push("/login");
+            }
+        }
+        checkAuth();
+    }, []);
+
     const cards = ["VISA", "MC", "AMEX", "RuPay"];
     const products = [
         {
@@ -35,6 +58,14 @@ export default function Page() {
         { label: "Assembly", value: "Free", type: "free" },
         { label: "Discount (Nestro15)", value: "-25,650", type: "discount" },
     ];
+
+    if (checkingAuth) {
+        return (
+            <div className="w-full min-h-screen flex items-center justify-center bg-[#F8F5F1]">
+                <div className="text-[13px] text-[#6B7280]">Loading...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="w-full bg-[#F8F5F1]  min-h-screen">

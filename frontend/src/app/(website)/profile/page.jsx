@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { client } from "@/utils/helper";
 import { MdCurrencyRupee } from "react-icons/md";
 import { LuSofa } from "react-icons/lu";
 import { FaTable } from "react-icons/fa";
@@ -108,8 +110,27 @@ const SettingsSection = () => {
 
 // ---------- Main Page ----------
 export default function ProfilePage() {
+  const router = useRouter();
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("My Orders");
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await client.get("user/profile");
+        if (!res.data.success) {
+          router.push("/login");
+        } else {
+          setCheckingAuth(false);
+        }
+      } catch (err) {
+        router.push("/login");
+      }
+    }
+    checkAuth();
+  }, []);
+
   const renderContent = () => {
     switch (activeTab) {
       case "My Orders": return <OrdersSection />;
@@ -118,11 +139,18 @@ export default function ProfilePage() {
       case "Settings": return <SettingsSection />;
       case "Sign Out":
         alert("Signing out... (demo)");
-        // Add your logout logic here (clear token, redirect)
         return <div className="text-center py-10">You have been signed out.</div>;
       default: return <OrdersSection />;
     }
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center bg-[#F8F5F1]">
+        <div className="text-[13px] text-[#6B7280]">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-[#F8F5F1] min-h-screen py-6 sm:py-8">

@@ -1,8 +1,7 @@
 "use client";
 
 import { TbPackage } from "react-icons/tb";
-import { FaUser } from "react-icons/fa6";
-import { FaLocationDot } from "react-icons/fa6";
+import { FaUser, FaLocationDot } from "react-icons/fa6";
 import { IoIosSettings } from "react-icons/io";
 import { MdOutlineLogout } from "react-icons/md";
 
@@ -22,12 +21,15 @@ export default function MenuItems({ activeTab, onTabChange }) {
         <div className="w-18 h-18 rounded-full bg-[#F0EBE3] flex items-center justify-center text-[22px] font-medium text-[#8B5E3C] mb-3 uppercase">
           MA
         </div>
+
         <div className="text-[15px] font-medium text-[#1E1E1E] mb-1 capitalize">
           Madhav Arora
         </div>
+
         <div className="text-[11px] text-[#6B7280] mb-3">
           aroramadhav2111@gamil.com
         </div>
+
         <div className="bg-[#F5EDE4] text-[10px] text-[#8B5E3C] py-1 px-3 rounded-full tracking-wide">
           Gold Member
         </div>
@@ -53,3 +55,4 @@ export default function MenuItems({ activeTab, onTabChange }) {
     </div>
   );
 }
+
