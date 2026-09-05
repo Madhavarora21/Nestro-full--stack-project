@@ -105,6 +105,9 @@ export default function Page() {
                 toast.success(
                     response.data.message || "Login successful"
                 );
+                 if (response.data.user?.token) {
+        localStorage.setItem("token", response.data.user.token);
+                 }
 
                 setLoginData({
                     email: "",
