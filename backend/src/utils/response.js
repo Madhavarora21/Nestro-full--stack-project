@@ -1,13 +1,15 @@
 // success response
-const sendSuccess = (res, message = "Success") => {
+const sendSuccess = (res, message = "Success", data = {}) => {
     return res.status(200).json({
         success: true,
-        message
+        message,
+        ...data
     });
 }
+
 // created response
 const sendCreated = (res, message = "Created Successfully") => {
-    return res.status(201).json({
+    return res.status(201).json({   
         success: true,
         message
     });
