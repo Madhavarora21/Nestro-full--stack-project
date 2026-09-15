@@ -17,6 +17,9 @@ const get = async (req, res) => {
         if (query.bestSeller) filter.bestSeller = query.bestSeller === "true";
         if (query.newArrival) filter.newArrival = query.newArrival === "true";
         if (query.featured) filter.featured = query.featured === "true";
+        if (query.search) {
+    filter.name = { $regex: query.search, $options: "i" };
+}
 
         if (query.rooms) {
             const roomSlugs = query.rooms.split(",");

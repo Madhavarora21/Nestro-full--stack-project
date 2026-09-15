@@ -1,9 +1,12 @@
 import UserModel from "../models/user.model.js";
+import admin from "../config/firebaseAdmin.js";
 import { sendBadRequest, sendConflict, sendCreated, sendNotFound, sendServerError, sendSuccess } from "../utils/response.js"
 import sendOtpMail from "../utils/sendOtpMail.js";
 import Cryptr from "cryptr";
 const cryptr = new Cryptr(process.env.API_SECRET);
 import generateToken from "../utils/generateToken.js";
+// import { OAuth2Client } from "google-auth-library";
+// const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const register = async (req, res) => {
     try {
@@ -147,11 +150,110 @@ const forgotPassword = async (req, res) => {
     }
 };
 
+const googleLogin = async (req, res) => {
+    try {
+        const { access_token } = req.body;
+
+        if (!access_token) {
+            return sendBadRequest(res, "Google access token is required");
+        }
+
+        const googleRes = await fetch(
+            `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`
+        );
+
+        if (!googleRes.ok) {
+            return sendBadRequest(res, "Invalid Google access token");
+        }
+
+        const payload = await googleRes.json();
+        const { email, name, sub: googleId } = payload;
+
+        let user = await UserModel.findOne({ email });
+
+        if (!user) {
+            user = await UserModel.create({
+                name,
+                email,
+                googleId,
+                isVerified: true,
+                password: undefined,
+            });
+        } else if (!user.googleId) {
+            user.googleId = googleId;
+            user.isVerified = true;
+            await user.save();
+        }
+
+        const token = generateToken(user._id);
+
+        res.cookie("jwt", token, {
+            maxAge: 900000,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        });
+
+        return sendSuccess(res, "Google login successful", { user, token });
+
+    } catch (error) {
+        console.log("GOOGLE LOGIN ERROR:", error);
+        sendServerError(res, "Internal Server Error");
+    }
+};
+
+const phoneLogin = async (req, res) => {
+    try {
+        const { idToken } = req.body;
+
+        if (!idToken) {
+            return sendBadRequest(res, "Firebase ID token is required");
+        }
+
+       const decodedToken = await admin.verifyIdToken(idToken);
+        const { phone_number: phoneNumber, uid: firebaseUid } = decodedToken;
+
+        let user = await UserModel.findOne({ mobile: phoneNumber });
+
+        if (!user) {
+            user = await UserModel.create({
+                name: phoneNumber,
+                email: `${firebaseUid}@phone.nestro.com`,
+                mobile: phoneNumber,
+                firebaseUid,
+                isVerified: true,
+                password: undefined,
+            });
+        } else if (!user.firebaseUid) {
+            user.firebaseUid = firebaseUid;
+            user.isVerified = true;
+            await user.save();
+        }
+
+        const token = generateToken(user._id);
+
+        res.cookie("jwt", token, {
+            maxAge: 900000,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        });
+
+        return sendSuccess(res, "Phone login successful", { user, token });
+
+    } catch (error) {
+        console.log("PHONE LOGIN ERROR:", error);
+        sendServerError(res, "Internal Server Error");
+    }
+};
+
 export {
     forgotPassword,
     register,
     verifyOtp,
     resendOtp,
     login,
-    getProfile
+    getProfile,
+    googleLogin,
+    phoneLogin
 }

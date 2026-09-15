@@ -39,12 +39,11 @@ export const cartSlice = createSlice({
         },
         decreaseQuantity: (state, { payload }) => {
             const cartItem = state.items.find((item) => item.id == payload.id);
-            if (!cartItem) return
-            if (cartItem > 1) {
-                state.items = state.items.filter((item) => item.id !== payload.id);
-
-            } else {
+            if (!cartItem) return;
+            if (cartItem.qty > 1) {
                 cartItem.qty -= 1;
+            } else {
+                state.items = state.items.filter((item) => item.id !== payload.id);
             }
         },
         cartTotal: (state, { payload }) => {

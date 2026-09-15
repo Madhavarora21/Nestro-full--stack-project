@@ -6,19 +6,19 @@ export default function Review() {
     {
       name: "Priya Rao",
       initials: "PR",
-      location: "Mumbai",
+      location: "Banglore",
       review: "The Ember Velvet sofa is absolutely stunning. Delivery was flawless and the quality is beyond what I expected.",
     },
     {
       name: "Arjun Sharma",
       initials: "AS",
-      location: "Mumbai",
+      location: "Gurgaon",
       review: "Nestro transformed our living room. Every piece feels like it belongs — timeless and beautifully crafted.",
     },
     {
       name: "Neha Patel",
       initials: "NP",
-      location: "Mumbai",
+      location: "Gurgaon",
       review: "Premium quality at a fair price. The travertine side table is a conversation starter every time.",
     },
   ];

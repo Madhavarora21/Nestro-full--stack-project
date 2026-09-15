@@ -13,10 +13,21 @@ const userSchema = new mongoose.Schema({
         lowercase: true
     },
 
-    password: {
+        password: {
         type: String,
-        required: true,
+        required: function () {
+            return !this.googleId;
+        },
         minlength: 6
+    },
+
+    googleId: {
+        type: String,
+        default: null
+    },
+    firebaseUid: {
+        type: String,
+        default: null
     },
 
     mobile: {

@@ -2,17 +2,44 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { IoCloseOutline } from "react-icons/io5";
+import { fetchProduct } from "@/utils/api";
 
 export default function Store_Header() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState([]);
+  const [totalProducts, setTotalProducts] = useState(0);
 
   useEffect(() => {
     const rooms = searchParams.get("rooms")?.split(",") || [];
     const categories = searchParams.get("category")?.split(",") || [];
     setFilters([...rooms, ...categories]);
+  }, [searchParams]);
+
+  useEffect(() => {
+    async function loadCount() {
+      const rooms = searchParams.get("rooms") || [];
+      const categories = searchParams.get("category") || [];
+      const min = searchParams.get("min") || 800;
+      const max = searchParams.get("max") || 200000;
+      const sort = searchParams.get("sort") || "";
+      const stock = searchParams.get("stock") || "";
+
+      const res = await fetchProduct({
+        rooms,
+        category: categories,
+        min,
+        max,
+        sort,
+        limit: 1,
+        ...(stock !== "" && { stock }),
+      });
+
+      setTotalProducts(res.meta?.total ?? res.data.length);
+    }
+
+    loadCount();
   }, [searchParams]);
 
   function applyFilter(value) {
@@ -49,7 +76,7 @@ export default function Store_Header() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white rounded-[10px] border-[0.5px] border-[#E8E0D5] px-4 py-3 mb-5">
         <span className="text-[12px] text-[#6B7280]">
-          <strong className="text-[#1E1E1E] font-medium">128</strong> products found
+          <strong className="text-[#1E1E1E] font-medium">{totalProducts}</strong> products found
         </span>
         <div className="flex flex-wrap items-center gap-2.5">
           {filters.map((filter, index) => (

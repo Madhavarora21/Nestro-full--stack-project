@@ -5,12 +5,16 @@ const server = express();
 import { connectDB } from './config/connectDB.js';
 
 
-import categoryRouter from './routers/category.router.js';
+
 import roomRouter from './routers/room.router.js';
 import productRouter from "./routers/product.router.js";
 import userRouter from './routers/user.router.js';
 import cartRouter from './routers/cart.router.js'
 import cookieParser from 'cookie-parser';
+import categoryRouter from './routers/category.router.js';
+import orderRouter from "./routers/order.router.js";
+
+
 
 server.use(cookieParser())
 server.use(express.json()); 
@@ -27,7 +31,16 @@ server.use("/api/category", categoryRouter)
 server.use("/api/room-type", roomRouter)
 server.use("/api/product", productRouter)
 server.use("/api/user", userRouter);
-server.use("/api/cart",cartRouter);
+server.use("/api/cart", cartRouter);
+server.use("/api/order", orderRouter);
+server.use((err, req, res, next) => {
+    console.error("UNHANDLED ERROR:", err.message || err);
+    res.status(500).json({
+        success: false,
+        message: err.message || "Internal Server Error",
+    });
+});
+
 
 connectDB()
 server.listen(process.env.PORT, () => {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { GoArrowRight } from "react-icons/go";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Hero({
   subtitle,
@@ -12,6 +13,7 @@ export default function Hero({
   image,
   button1 = "Shop Collection",
   button2 = "View Lookbook",
+  button1Link = "/store",
 }) {
   return (
     <div
@@ -34,10 +36,12 @@ export default function Hero({
       {(button1 || button2) && (
   <div className='flex flex-wrap gap-3'>
     {button1 && (
-      <button className='bg-[#8B5E3C] text-[#FFF8F3] text-xs sm:text-[11px] tracking-[0.08em] py-2.5 px-5 rounded-sm cursor-pointer border-none font-medium inline-flex items-center gap-2 transition hover:bg-[#7a4f32]'>
-        {button1}
-        <GoArrowRight />
-      </button>
+      <Link href={button1Link}>
+        <button className='bg-[#8B5E3C] text-[#FFF8F3] text-xs sm:text-[11px] tracking-[0.08em] py-2.5 px-5 rounded-sm cursor-pointer border-none font-medium inline-flex items-center gap-2 transition hover:bg-[#7a4f32]'>
+          {button1}
+          <GoArrowRight />
+        </button>
+      </Link>
     )}
 
     {button2 && (

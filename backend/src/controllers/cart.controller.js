@@ -1,9 +1,5 @@
-
 import CartModel from "../models/cart.models.js";
 import { sendBadRequest, sendConflict, sendCreated, sendNotFound, sendServerError, sendSuccess } from "../utils/response.js"
-
-
-
 
 const syncCart = async (req, res) => {
   try {
@@ -76,10 +72,7 @@ const addToCart = async (req, res) => {
 
 
     }
-        const existingItem = cart.items.find(
-            items =>
-                item.productId.toString
-        )
+      
     const item = cart.items.find(
       (i) => i.productId.toString() === productId
     );

@@ -40,3 +40,6 @@ pnpm-debug.log*
 frontend/next-env.d.ts
 .vercel
 .env*
+
+# Firebase
+backend/src/config/firebase-service-account.json

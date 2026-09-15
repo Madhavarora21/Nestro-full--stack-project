@@ -165,6 +165,9 @@ export const fetchProduct = async (queryObject = {}) => {
             query.append("category", queryObject.category);
         }
 
+        if (queryObject.search) {
+    query.append("search", queryObject.search);
+}
         if (
             queryObject.min !== undefined &&
             queryObject.max !== undefined &&
@@ -229,6 +232,31 @@ export const fetchProductById = async (id) => {
         return {
             success: false,
             data: null,
+            message:
+                error.response?.data?.message ||
+                "Internal Server Error"
+        };
+    }
+};
+export const fetchMyOrders = async () => {
+    try {
+        const response = await client.get("order/my-orders");
+
+        return {
+            success: response.data.success,
+            data: response.data.orders || [],
+            message: response.data.message
+        };
+
+    } catch (error) {
+        console.log(
+            "FETCH MY ORDERS ERROR:",
+            error.response?.data || error.message
+        );
+
+        return {
+            success: false,
+            data: [],
             message:
                 error.response?.data?.message ||
                 "Internal Server Error"

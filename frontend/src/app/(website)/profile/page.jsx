@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { client } from "@/utils/helper";
+import { fetchMyOrders } from "@/utils/api";
 import { MdCurrencyRupee } from "react-icons/md";
 import { LuSofa } from "react-icons/lu";
 import { FaTable } from "react-icons/fa";
@@ -13,28 +14,95 @@ import MenuItems from "@/components/website/profile/MenuItems";
 
 // ---------- Orders Component ----------
 const OrdersSection = () => {
-  const orders = [
-    { id: "MN-2847", date: "May 3, 2026", product: "Ember Velvet 3-Seater", icon: <LuSofa />, status: "Delivered", statusColor: "bg-[#EAF3DE] text-[#3B6D11]", price: "89,000" },
-    { id: "MN-2848", date: "May 5, 2026", product: "Aurora Dining Set", icon: <FaTable />, status: "Shipped", statusColor: "bg-[#FFF3CD] text-[#856404]", price: "1,20,000" },
-    { id: "MN-2848", date: "May 5, 2026", product: "Aurora Armchair", icon: <TbArmchair2 />, status: "Delivered", statusColor: "bg-[#EAF3DE] text-[#3B6D11]", price: "20,000" },
-  ];
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadOrders() {
+      const res = await fetchMyOrders();
+      setOrders(res.data || []);
+      setLoading(false);
+    }
+    loadOrders();
+  }, []);
+
+  const statusStyles = {
+    PLACED: "bg-[#FFF3CD] text-[#856404]",
+    PROCESSING: "bg-[#FFF3CD] text-[#856404]",
+    SHIPPED: "bg-[#DCEEFA] text-[#2A6F97]",
+    DELIVERED: "bg-[#EAF3DE] text-[#3B6D11]",
+    CANCELLED: "bg-[#FADBD8] text-[#943126]",
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white border border-[#E8E0D5] rounded-xl p-4 sm:p-5">
+        <div className="text-[13px] text-[#6B7280]">Loading orders...</div>
+      </div>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <div className="bg-white border border-[#E8E0D5] rounded-xl p-8 sm:p-10 text-center">
+        <div className="text-[13px] font-medium text-[#1E1E1E] mb-1">
+          No orders yet
+        </div>
+        <div className="text-[11px] text-[#6B7280]">
+          Your placed orders will show up here.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white border border-[#E8E0D5] rounded-xl p-4 sm:p-5">
-      <div className="text-[13px] font-medium text-[#1E1E1E] mb-4 pb-3 border-b border-[#E8E0D5]">Recent Orders</div>
-      {orders.map((order, idx) => (
-        <div key={idx} className="flex flex-wrap sm:flex-nowrap items-center gap-3 border-b border-[#E8E0D5] py-3 last:border-0">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#F5F0EB] rounded-lg flex items-center justify-center text-[18px] sm:text-[20px] text-[#C6A27E] shrink-0">{order.icon}</div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[11px] sm:text-[12px] font-medium text-[#1E1E1E] truncate">{order.product}</div>
-            <div className="text-[9px] sm:text-[10px] mt-0.5 text-[#6B7280]">Order #{order.id} · {order.date}</div>
+      <div className="text-[13px] font-medium text-[#1E1E1E] mb-4 pb-3 border-b border-[#E8E0D5]">
+        Recent Orders
+      </div>
+      {orders.map((order) => {
+        const firstItem = order.items?.[0];
+        const extraCount = order.items?.length - 1;
+        const productName = firstItem?.productId?.name || "Product";
+
+        return (
+          <div
+            key={order._id}
+            className="flex flex-wrap sm:flex-nowrap items-center gap-3 border-b border-[#E8E0D5] py-3 last:border-0"
+          >
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#F5F0EB] rounded-lg flex items-center justify-center text-[18px] sm:text-[20px] text-[#C6A27E] shrink-0">
+              <LuSofa />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[11px] sm:text-[12px] font-medium text-[#1E1E1E] truncate">
+                {productName}
+                {extraCount > 0 && ` + ${extraCount} more`}
+              </div>
+              <div className="text-[9px] sm:text-[10px] mt-0.5 text-[#6B7280]">
+                Order #{order.orderId} ·{" "}
+                {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3 ml-auto sm:ml-0">
+              <span
+                className={`${
+                  statusStyles[order.orderStatus] ||
+                  "bg-[#F0EBE3] text-[#6B7280]"
+                } text-[9px] sm:text-[10px] py-0.5 px-2 rounded-[10px] whitespace-nowrap`}
+              >
+                {order.orderStatus}
+              </span>
+              <div className="text-[12px] sm:text-[13px] font-medium text-[#1E1E1E] flex items-center whitespace-nowrap">
+                <MdCurrencyRupee /> {order.totalAmount?.toLocaleString()}
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 ml-auto sm:ml-0">
-            <span className={`${order.statusColor} text-[9px] sm:text-[10px] py-0.5 px-2 rounded-[10px] whitespace-nowrap`}>{order.status}</span>
-            <div className="text-[12px] sm:text-[13px] font-medium text-[#1E1E1E] flex items-center whitespace-nowrap"><MdCurrencyRupee /> {order.price}</div>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

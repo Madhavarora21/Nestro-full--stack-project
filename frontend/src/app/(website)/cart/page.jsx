@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
 import Link from "next/link";
 import Image from "next/image";
 import { MdOutlineCurrencyRupee } from "react-icons/md";
@@ -9,45 +10,30 @@ import { GoArrowLeft } from "react-icons/go";
 import { ImLoop2 } from "react-icons/im";
 import { FaPencilRuler } from "react-icons/fa";
 import { TbShieldBolt, TbTruckDelivery } from "react-icons/tb";
+import {
+  removeFromCart,
+  increaseQuantity,
+  decreaseQuantity,
+} from "@/redex/features/CartSlice";
 
 export default function CartPage() {
-  // Sample cart items – replace with actual state/context later
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: "Ember Velvet 3-Seater",
-      variant: "Walnut Brown · 3-Seater",
-      price: 89000,
-      quantity: 1,
-      image: "/selles/sofa.png",
-      inStock: true,
-    },
-    {
-      id: 2,
-      name: "Nordic Oak Bookcase",
-      variant: "Natural Oak",
-      price: 42800,
-      quantity: 1,
-      image: "/selles/storage.png",
-      inStock: true,
-    },
-  ]);
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cart.items);
 
-  const updateQuantity = (id, newQuantity) => {
-    if (newQuantity < 1) return;
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
+  const handleIncrease = (id) => {
+    dispatch(increaseQuantity({ id }));
+  };
+
+  const handleDecrease = (id) => {
+    dispatch(decreaseQuantity({ id }));
   };
 
   const removeItem = (id) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+    dispatch(removeFromCart({ id }));
   };
 
   const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + item.salePrice * item.qty,
     0
   );
   const deliveryCharge = subtotal > 50000 ? 0 : 1500;
@@ -119,7 +105,7 @@ export default function CartPage() {
                     <div className="flex gap-4 flex-1">
                       <div className="w-20 h-20 bg-[#F5F0EB] rounded-lg flex items-center justify-center overflow-hidden shrink-0">
                         <Image
-                          src={item.image}
+                          src={item.thumbnail}
                           alt={item.name}
                           width={80}
                           height={80}
@@ -130,9 +116,6 @@ export default function CartPage() {
                         <h3 className="text-[13px] font-medium text-[#1E1E1E]">
                           {item.name}
                         </h3>
-                        <p className="text-[11px] text-[#6B7280] mt-0.5">
-                          {item.variant}
-                        </p>
                         <div className="flex items-center gap-3 mt-2">
                           <span className="text-[11px] text-[#3b6d11] flex items-center gap-1">
                             ✓ In Stock
@@ -152,7 +135,7 @@ export default function CartPage() {
                       <div className="sm:w-24 text-left sm:text-center">
                         <span className="text-[12px] text-[#6B7280] sm:hidden block text-left">Price:</span>
                         <span className="text-[13px] font-medium text-[#1E1E1E] flex items-center">
-                          <MdOutlineCurrencyRupee /> {item.price.toLocaleString()}
+                          <MdOutlineCurrencyRupee /> {item.salePrice.toLocaleString()}
                         </span>
                       </div>
 
@@ -161,16 +144,16 @@ export default function CartPage() {
                         <span className="text-[12px] text-[#6B7280] sm:hidden block">Qty:</span>
                         <div className="flex items-center border border-[#E8E0D5] rounded-md overflow-hidden w-fit sm:mx-auto">
                           <button
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            onClick={() => handleDecrease(item.id)}
                             className="w-7 h-7 flex items-center justify-center bg-[#FAFAF9] text-[#444] text-sm"
                           >
                             -
                           </button>
                           <div className="w-8 h-7 flex items-center justify-center border-x border-[#E8E0D5] text-sm font-medium">
-                            {item.quantity}
+                            {item.qty}
                           </div>
                           <button
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            onClick={() => handleIncrease(item.id)}
                             className="w-7 h-7 flex items-center justify-center bg-[#FAFAF9] text-[#444] text-sm"
                           >
                             +
@@ -182,7 +165,7 @@ export default function CartPage() {
                       <div className="sm:w-24 text-right sm:text-center">
                         <span className="text-[12px] text-[#6B7280] sm:hidden block">Total:</span>
                         <span className="text-[14px] font-semibold text-[#1E1E1E] flex items-center justify-end sm:justify-center">
-                          <MdOutlineCurrencyRupee /> {(item.price * item.quantity).toLocaleString()}
+                          <MdOutlineCurrencyRupee /> {(item.salePrice * item.qty).toLocaleString()}
                         </span>
                       </div>
                     </div>

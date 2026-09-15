@@ -8,9 +8,11 @@ export const protect = async (req, res, next) => {
             token = req.cookies.jwt;
         }
 
-        if(!token && req.headers.authorization ) {
-            token = req.headers.authorization;
-        }
+      if (!token && req.headers.authorization) {
+    token = req.headers.authorization.startsWith("Bearer ")
+        ? req.headers.authorization.split(" ")[1]
+        : req.headers.authorization;
+}
 
         if (!token) {
             return res.status(401).json({ success: false, message: "Unauthorized" });

@@ -12,11 +12,20 @@ export default async function NewProduct() {
     limit: 20,
   })
 
-const allProducts = response?.data || [];
+  const allProducts = response?.data || []
 
-const products = allProducts.filter(
-  (product) => product?.newArrival === true
-);
+  const products = allProducts.filter(
+    (product) => product?.newArrival === true
+  )
+
+  // Get a real featured product from the database
+  const featuredResponse = await fetchProduct({
+    status: true,
+    featured: true,
+    limit: 1,
+  })
+
+  const featuredProduct = featuredResponse?.data?.[0] || null
 
   return (
     <div className="max-w-container mx-auto mb-5 sm:mb-10">
@@ -52,26 +61,32 @@ const products = allProducts.filter(
             Featured
           </div>
 
-          <div className="text-[16px] sm:text-[18px] text-[#FAF7F4] font-normal mb-1.5 leading-[1.3]">
-            Scandinavian
-            <br />
-            Dining Set
-          </div>
+          {featuredProduct ? (
+            <>
+              <div className="text-[16px] sm:text-[18px] text-[#FAF7F4] font-normal mb-1.5 leading-[1.3]">
+                {featuredProduct.name}
+              </div>
 
-          <div className="text-[11px] sm:text-[12px] text-[#ffffff73] mb-4">
-            Ash wood + linen chairs. Set of 4
-          </div>
+              <div className="text-[11px] sm:text-[12px] text-[#ffffff73] mb-4">
+                {featuredProduct.shortDescription || featuredProduct.material || ""}
+              </div>
 
-          <div className="text-[14px] sm:text-[16px] text-[#D6BFA7] font-medium mb-6 sm:mb-10 flex items-center">
-            <MdOutlineCurrencyRupee />
-            1,24,000
-          </div>
+              <div className="text-[14px] sm:text-[16px] text-[#D6BFA7] font-medium mb-6 sm:mb-10 flex items-center">
+                <MdOutlineCurrencyRupee />
+                {Number(featuredProduct.salePrice).toLocaleString("en-IN")}
+              </div>
 
-          <Link href="/store">
-            <button className="bg-[#8B5E3C] text-[#FFF8F3] text-[10px] px-4 py-2 mt-6 sm:mt-10 tracking-[0.08em] rounded-sm cursor-pointer border-none font-medium inline-flex items-center gap-2">
-              View in store
-            </button>
-          </Link>
+              <Link href={`/product/${featuredProduct._id}`}>
+                <button className="bg-[#8B5E3C] text-[#FFF8F3] text-[10px] px-4 py-2 mt-6 sm:mt-10 tracking-[0.08em] rounded-sm cursor-pointer border-none font-medium inline-flex items-center gap-2">
+                  View in store
+                </button>
+              </Link>
+            </>
+          ) : (
+            <div className="text-[12px] text-[#ffffff73] pb-10">
+              No featured product set yet.
+            </div>
+          )}
 
           <div className="relative -top-24 -right-20 sm:-top-28 sm:-right-27 w-50 h-25 opacity-70">
 

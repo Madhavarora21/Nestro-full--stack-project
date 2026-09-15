@@ -5,7 +5,8 @@ import { GoArrowLeft } from "react-icons/go";
 import ImageProduct from "@/components/website/product/ImageProduct";
 import { LuCheck } from "react-icons/lu";
 import { MdOutlineCurrencyRupee } from "react-icons/md";
-import { TbShoppingBag } from "react-icons/tb";
+import ProductActions from "@/components/website/product/ProductActions";
+// import { TbShoppingBag } from "react-icons/tb";
 import { ImLoop2 } from "react-icons/im";
 import { FaPencilRuler } from "react-icons/fa";
 import { TbShieldBolt } from "react-icons/tb";
@@ -125,46 +126,7 @@ const product = response?.data;
           {/* Product Color */}
           <ProductColor product={product} />
 
-          {/* Quantity */}
-          <div className="text-[11px] text-[#1E1E1E] uppercase mb-2.5 tracking-[0.04em] font-medium">
-            Quantity
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 mb-5">
-            <div className="flex items-center border border-[#E8E0D5] rounded-md overflow-hidden">
-
-              <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center cursor-pointer bg-[#FAFAF9] text-[#444444] text-[14px]">
-                -
-              </button>
-
-              <div className="w-9 h-8 sm:w-10.5 sm:h-9 flex items-center justify-center border-l border-r border-[#E8E0D5] font-medium text-sm">
-                1
-              </div>
-
-              <button className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center cursor-pointer bg-[#FAFAF9] text-[#444444] text-[14px]">
-                +
-              </button>
-
-            </div>
-
-            <span className="text-[11px] sm:text-[12px] text-[#6B7280]">
-              Max 5 per order
-            </span>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-
-            <button className="bg-[#8B5E3C] text-[#FFF8F3] py-2.5 px-4 sm:py-3 sm:px-6 font-medium gap-2 rounded-md text-[12px] cursor-pointer flex flex-1 justify-center items-center">
-              <TbShoppingBag />
-              Add to Cart
-            </button>
-
-            <button className="bg-[#2C2016] text-[#D6BFA7] py-2.5 px-4 sm:py-3 sm:px-6 font-medium gap-2 rounded-md text-[12px] cursor-pointer flex flex-1 justify-center items-center">
-              Buy Now
-            </button>
-
-          </div>
+          <ProductActions product={product} />
 
           {/* Features */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-5">

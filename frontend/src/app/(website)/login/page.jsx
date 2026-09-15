@@ -13,8 +13,9 @@ import {
 } from "react-icons/io5";
 import { RiAppleFill } from "react-icons/ri";
 import Link from "next/link";
+import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 
-export default function Page() {
+function LoginForm() {
     const router = useRouter();
     useEffect(() => {
         async function checkIfLoggedIn() {
@@ -147,6 +148,57 @@ export default function Page() {
         }
     }
 
+        // ================= GOOGLE LOGIN =================
+
+
+    async function sendGoogleToken(accessToken) {
+        try {
+            setLoading(true);
+
+            const response = await client.post("user/google-login", {
+                access_token: accessToken,
+            });
+
+            if (response.data.success) {
+                toast.success(response.data.message || "Login successful");
+
+                if (response.data.token) {
+                    localStorage.setItem("token", response.data.token);
+                }
+
+                try {
+                    const cart =
+                        typeof window !== "undefined"
+                            ? JSON.parse(localStorage.getItem("cart") || "[]")
+                            : [];
+
+                    await client.post("cart/sync", {
+                        localcart: cart ?? null,
+                    });
+                } catch (cartError) {
+                    console.log("Cart Sync Error:", cartError);
+                }
+
+                router.push("/");
+            }
+        } catch (error) {
+            console.log("Google Login Error:", error);
+            toast.error(
+                error.response?.data?.message || "Google login failed"
+            );
+        } finally {
+            setLoading(false);
+        }
+    }
+        const googleLogin = useGoogleLogin({
+        onSuccess: (tokenResponse) => {
+            sendGoogleToken(tokenResponse.access_token);
+        },
+        onError: () => {
+            toast.error("Google login failed");
+        },
+    });
+
     // ================= CREATE ACCOUNT =================
 
     async function signupHandler(e) {
@@ -200,7 +252,7 @@ export default function Page() {
         }
     }
 
-    return (
+        return (
         <div className="flex flex-col lg:flex-row min-h-screen bg-[#F8F5F1] overflow-auto">
 
             {/* ================= LEFT SIDE ================= */}
@@ -435,19 +487,17 @@ export default function Page() {
 
                             </div>
 
-                            {/* Google */}
+{/* Google */}
 
-                            <button
-                                type="button"
-                                className="w-full py-2 border border-[#E8E0D5] rounded-md text-[12px] text-[#444] bg-white flex items-center justify-center gap-2 hover:bg-gray-50 transition mb-2"
-                            >
+<button
+    type="button"
+    onClick={() => googleLogin()}
+    className="w-full py-2 border border-[#E8E0D5] rounded-md text-[12px] text-[#444] bg-white flex items-center justify-center gap-2 hover:bg-gray-50 transition"
+>
+    <IoLogoGoogle />
 
-                                <IoLogoGoogle />
-
-                                Continue with Google
-
-                            </button>
-
+    Continue with Google
+</button>
                             {/* Apple */}
 
                             <button
@@ -692,17 +742,15 @@ export default function Page() {
 
                             </div>
 
-                            {/* Google */}
+                                                       {/* Google */}
 
                             <button
                                 type="button"
+                                onClick={() => googleLogin()}
                                 className="w-full py-2 border border-[#E8E0D5] rounded-md text-[12px] text-[#444] bg-white flex items-center justify-center gap-2 hover:bg-gray-50 transition"
                             >
-
                                 <IoLogoGoogle />
-
                                 Continue with Google
-
                             </button>
 
                             {/* Sign In */}
@@ -735,6 +783,14 @@ export default function Page() {
 
             </div>
 
-        </div>
+               </div>
+    );
+}
+
+export default function Page() {
+    return (
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
+            <LoginForm />
+        </GoogleOAuthProvider>
     );
 }
