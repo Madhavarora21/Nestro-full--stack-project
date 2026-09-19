@@ -1,6 +1,38 @@
 import CartModel from "../models/cart.models.js";
 import { sendBadRequest, sendConflict, sendCreated, sendNotFound, sendServerError, sendSuccess } from "../utils/response.js"
 
+const getCart = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const cart = await CartModel.findOne({ userId }).populate(
+      "items.productId",
+      "name salePrice originalPrice discount thumbnail"
+    );
+
+    if (!cart) {
+      return sendSuccess(res, "Cart is empty", { items: [] });
+    }
+
+    const items = cart.items
+      .filter((item) => item.productId)
+      .map((item) => ({
+        id: item.productId._id,
+        name: item.productId.name,
+        salePrice: item.productId.salePrice,
+        originalPrice: item.productId.originalPrice,
+        discount: item.productId.discount,
+        thumbnail: item.productId.thumbnail,
+        qty: item.qty,
+      }));
+
+    return sendSuccess(res, "Cart fetched successfully", { items });
+  } catch (error) {
+    console.log(error);
+    sendServerError(res, "Internal Server Error");
+  }
+};
+
 const syncCart = async (req, res) => {
   try {
     const id = req.user._id;
@@ -166,6 +198,6 @@ export {
     syncCart,
     addToCart,
     removeFromCart,
-    qty 
-  
+    qty,
+    getCart
 }

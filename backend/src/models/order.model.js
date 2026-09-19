@@ -94,12 +94,22 @@ const orderSchema = new mongoose.Schema(
       default: 0,
     },
 
-    discount: {
-      type: Number,
-      default: 0,
-    },
+            discount: {
+            type: Number,
+            default: 0,
+        },
 
-    totalAmount: {
+        purchaseProtection: {
+            type: Boolean,
+            default: false,
+        },
+
+        protectionCharge: {
+            type: Number,
+            default: 0,
+        },
+
+        totalAmount: {
       type: Number,
       required: true,
     },

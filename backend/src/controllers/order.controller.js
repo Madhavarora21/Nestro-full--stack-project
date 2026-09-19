@@ -12,7 +12,7 @@ const placeOrder = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const {
+        const {
       firstName,
       lastName,
       address,
@@ -21,6 +21,7 @@ const placeOrder = async (req, res) => {
       pincode,
       phone,
       paymentMethod,
+      purchaseProtection,
     } = req.body;
 
     // Validate payment method
@@ -66,16 +67,17 @@ const placeOrder = async (req, res) => {
       0
     );
 
-    const deliveryCharge = 0;
+        const deliveryCharge = 0;
     const discount = 0;
+    const protectionCharge = purchaseProtection ? 1499 : 0;
 
-    const totalAmount = subtotal + deliveryCharge - discount;
+    const totalAmount = subtotal + deliveryCharge - discount + protectionCharge;
 
     // Generate demo order ID
     const orderId = `NESTRO-${Date.now()}`;
 
     // Create order
-    const order = await OrderModel.create({
+       const order = await OrderModel.create({
       userId,
       items: orderItems,
 
@@ -99,6 +101,8 @@ const placeOrder = async (req, res) => {
       subtotal,
       deliveryCharge,
       discount,
+      purchaseProtection: !!purchaseProtection,
+      protectionCharge,
       totalAmount,
 
       orderId,
