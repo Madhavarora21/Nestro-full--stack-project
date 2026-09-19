@@ -23,6 +23,8 @@ export default function Page() {
     const [orderId, setOrderId] = useState("");
 
     const [paymentMethod, setPaymentMethod] = useState("CARD");
+        const [purchaseProtection, setPurchaseProtection] = useState(false);
+            const [shippingMethod, setShippingMethod] = useState("STANDARD");
 
   const [formData, setFormData] = useState({
     firstName: "Madhav",
@@ -85,7 +87,7 @@ export default function Page() {
         setPlacingOrder(true);
 
         try {
-            const res = await client.post("order/place-order", {
+                                const res = await client.post("order/place-order", {
                 firstName: formData.firstName,
                 lastName: formData.lastName,
                 address: formData.address,
@@ -95,6 +97,8 @@ export default function Page() {
                 phone: formData.phone,
                 paymentMethod:
                     paymentMethod === "COD" ? "COD" : "ONLINE",
+                purchaseProtection,
+                shippingMethod,
             });
 
             if (res.data.success) {
@@ -118,13 +122,13 @@ export default function Page() {
 
     const cards = ["VISA", "MC", "AMEX", "RuPay"];
 
-    const subtotal = cartItems.reduce(
+      const subtotal = cartItems.reduce(
         (sum, item) => sum + item.salePrice * item.qty,
         0
     );
-    const deliveryCharge = subtotal > 50000 ? 0 : 1500;
-    const total = subtotal + deliveryCharge;
-
+        const deliveryCharge = shippingMethod === "EXPRESS" ? 1500 : 0;
+    const protectionCharge = purchaseProtection ? 1499 : 0;
+    const total = subtotal + deliveryCharge + protectionCharge;
     if (checkingAuth) {
         return (
             <div className="w-full min-h-screen flex items-center justify-center bg-[#F8F5F1]">
@@ -373,9 +377,18 @@ export default function Page() {
                             Shipping Method
                         </div>
 
-                        <div className="bg-[#FFF8F5] border-[#8B5E3C] border-[0.5px] rounded-lg mb-2 cursor-pointer flex flex-wrap items-center gap-3 p-3">
+                                               <div
+                            onClick={() => setShippingMethod("STANDARD")}
+                            className={`border-[0.5px] rounded-lg mb-2 cursor-pointer flex flex-wrap items-center gap-3 p-3 transition ${
+                                shippingMethod === "STANDARD"
+                                    ? "bg-[#FFF8F5] border-[#8B5E3C]"
+                                    : "bg-white border-[#E8E0D5]"
+                            }`}
+                        >
                             <div className="w-4 h-4 rounded-full border-[#C6A27E] border-[1.5px] flex items-center justify-center shrink-0">
-                                <GoDotFill className="w-2 h-2 text-[#8B5E3C] rounded-full" />
+                                {shippingMethod === "STANDARD" && (
+                                    <GoDotFill className="w-2 h-2 text-[#8B5E3C] rounded-full" />
+                                )}
                             </div>
 
                             <div className="flex-1">
@@ -393,8 +406,19 @@ export default function Page() {
                             </div>
                         </div>
 
-                        <div className="bg-white border-[#E8E0D5] border-[0.5px] rounded-lg mb-2 cursor-pointer flex flex-wrap items-center gap-3 p-3">
-                            <div className="w-4 h-4 rounded-full border-[#C6A27E] border-[1.5px] shrink-0"></div>
+                        <div
+                            onClick={() => setShippingMethod("EXPRESS")}
+                            className={`border-[0.5px] rounded-lg mb-2 cursor-pointer flex flex-wrap items-center gap-3 p-3 transition ${
+                                shippingMethod === "EXPRESS"
+                                    ? "bg-[#FFF8F5] border-[#8B5E3C]"
+                                    : "bg-white border-[#E8E0D5]"
+                            }`}
+                        >
+                            <div className="w-4 h-4 rounded-full border-[#C6A27E] border-[1.5px] flex items-center justify-center shrink-0">
+                                {shippingMethod === "EXPRESS" && (
+                                    <GoDotFill className="w-2 h-2 text-[#8B5E3C] rounded-full" />
+                                )}
+                            </div>
 
                             <div className="flex-1">
                                 <div className="text-[12px] text-[#1E1E1E]">
@@ -677,10 +701,20 @@ export default function Page() {
                                     )}
                                 </div>
 
-                                <div className="flex justify-between text-[12px] text-[#444444] mb-2">
+                                                               <div className="flex justify-between text-[12px] text-[#444444] mb-2">
                                     <span>Assembly</span>
                                     <span className="text-[#3B6D11]">Free</span>
                                 </div>
+
+                                {purchaseProtection && (
+                                    <div className="flex justify-between text-[12px] text-[#444444] mb-2">
+                                        <span>Purchase Protection</span>
+                                        <span className="flex items-center">
+                                            <MdOutlineCurrencyRupee />
+                                            {protectionCharge.toLocaleString("en-IN")}
+                                        </span>
+                                    </div>
+                                )}
 
                                 <div className="flex justify-between border-t border-[#E8E0D5] font-medium text-[14px] text-[#1E1E1E] pt-3 mt-1">
 
@@ -711,19 +745,27 @@ export default function Page() {
                             </div>
 
                             {/* PURCHASE PROTECTION */}
-                            <div className="border border-[#E8E0D5] p-3.5 mt-4 bg-white rounded-[10px]">
+                                                       {/* PURCHASE PROTECTION */}
+                            <label className="border border-[#E8E0D5] p-3.5 mt-4 bg-white rounded-[10px] flex items-start gap-3 cursor-pointer">
 
-                                <div className="text-[11px] font-medium text-[#1E1E1E] flex items-center mb-2">
+                                <input
+                                    type="checkbox"
+                                    checked={purchaseProtection}
+                                    onChange={(e) => setPurchaseProtection(e.target.checked)}
+                                    className="mt-1 accent-[#8B5E3C]"
+                                />
 
-                                    <TbShieldCheck className="text-[#8B5E3C] mr-1.5" />
+                                <div>
+                                    <div className="text-[11px] font-medium text-[#1E1E1E] flex items-center mb-1">
+                                        <TbShieldCheck className="text-[#8B5E3C] mr-1.5" />
+                                        Add Purchase Protection — ₹1,499
+                                    </div>
 
-                                    Purchase Protection
+                                    <div className="text-[10px] text-[#6B7280] leading-[1.6]">
+                                        Extended coverage: accidental damage protection, priority claims, and hassle-free replacements — on top of the standard 5-year warranty & 30-day returns.
+                                    </div>
                                 </div>
-
-                                <div className="text-[10px] text-[#6B7280] leading-[1.6]">
-                                    5-year warranty · 30-day returns · Free assembly included · Tracked delivery
-                                </div>
-                            </div>
+                            </label>
 
                         </div>
                     </div>

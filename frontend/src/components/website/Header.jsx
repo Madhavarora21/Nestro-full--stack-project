@@ -1,12 +1,14 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { IoSearchOutline } from "react-icons/io5";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
 import { IoPersonOutline } from "react-icons/io5";
 import { HiMenu, HiX } from "react-icons/hi";
 import { usePathname } from "next/navigation";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchCart } from '@/utils/api';
+import { setCart } from '@/redex/features/CartSlice';
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -23,7 +25,20 @@ export default function Header() {
   const closeMobileMenu = () => setMobileMenuOpen(false)
   const pathname = usePathname();
   const cartItems = useSelector((state) => state.cart?.items);
- 
+   const dispatch = useDispatch();
+
+  useEffect(() => {
+    async function loadCart() {
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      if (!token) return;
+
+      const res = await fetchCart();
+      if (res.success) {
+        dispatch(setCart(res.data));
+      }
+    }
+    loadCart();
+  }, []);
 
   return (
     <>

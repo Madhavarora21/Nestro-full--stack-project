@@ -263,3 +263,28 @@ export const fetchMyOrders = async () => {
         };
     }
 };
+export const fetchCart = async () => {
+    try {
+        const response = await client.get("cart/get-cart");
+
+        return {
+            success: response.data.success,
+            data: response.data.data || { items: [] },
+            message: response.data.message
+        };
+
+    } catch (error) {
+        console.log(
+            "FETCH CART ERROR:",
+            error.response?.data || error.message
+        );
+
+        return {
+            success: false,
+            data: { items: [] },
+            message:
+                error.response?.data?.message ||
+                "Internal Server Error"
+        };
+    }
+};

@@ -25,12 +25,15 @@ export default function ProductActions({ product }) {
         try {
             setLoading(true);
 
-            const response = await fetch(
+           const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+const response = await fetch(
                 `${process.env.NEXT_PUBLIC_BASE_URL}cart/add-to-cart`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        ...(token && { Authorization: token }),
                     },
                     credentials: "include",
                     body: JSON.stringify({
@@ -38,7 +41,7 @@ export default function ProductActions({ product }) {
                         qty: quantity,
                     }),
                 }
-            );
+            );  
 
             const data = await response.json();
 
@@ -76,12 +79,15 @@ export default function ProductActions({ product }) {
         try {
             setLoading(true);
 
-            const response = await fetch(
+          const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+const response = await fetch(
                 `${process.env.NEXT_PUBLIC_BASE_URL}cart/add-to-cart`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        ...(token && { Authorization: token }),
                     },
                     credentials: "include",
                     body: JSON.stringify({
@@ -89,8 +95,7 @@ export default function ProductActions({ product }) {
                         qty: quantity,
                     }),
                 }
-            );
-
+            );  
             const data = await response.json();
 
             if (!response.ok) {
