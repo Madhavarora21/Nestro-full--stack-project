@@ -150,6 +150,77 @@ const forgotPassword = async (req, res) => {
     }
 };
 
+const updateProfile = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { name, email, mobile } = req.body;
+
+        const existing = await UserModel.findOne({ email, _id: { $ne: userId } });
+        if (existing) {
+            return sendConflict(res, "Email already in use by another account");
+        }
+
+        const updatedUser = await UserModel.findByIdAndUpdate(
+            userId,
+            { name, email, mobile },
+            { new: true, runValidators: true }
+        ).select("-password -otp -otpExpire");
+
+        return sendSuccess(res, "Profile updated successfully", { user: updatedUser });
+    } catch (error) {
+        console.log(error);
+        sendServerError(res, "Internal Server Error");
+    }
+};
+
+const addAddress = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { fullName, mobile, pincode, addressLine, city, state, country, isDefault } = req.body;
+
+        if (!fullName || !mobile || !pincode || !addressLine || !city || !state) {
+            return sendBadRequest(res, "Please fill all required address fields");
+        }
+
+        const user = await UserModel.findById(userId);
+
+        if (isDefault) {
+            user.addresses.forEach((addr) => (addr.isDefault = false));
+        }
+
+        user.addresses.push({
+            fullName,
+            mobile,
+            pincode,
+            addressLine,
+            city,
+            state,
+            country: country || "India",
+            isDefault: !!isDefault || user.addresses.length === 0,
+        });
+
+        await user.save();
+
+        return sendSuccess(res, "Address added successfully", { addresses: user.addresses });
+    } catch (error) {
+        console.log(error);
+        sendServerError(res, "Internal Server Error");
+    }
+};
+
+const logout = async (req, res) => {
+    try {
+        res.clearCookie("jwt", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        });
+        return sendSuccess(res, "Logged out successfully");
+    } catch (error) {
+        sendServerError(res, "Internal Server Error");
+    }
+};
+
 const googleLogin = async (req, res) => {
     try {
         const { access_token } = req.body;
@@ -255,5 +326,8 @@ export {
     login,
     getProfile,
     googleLogin,
-    phoneLogin
+    phoneLogin,
+    updateProfile,
+    addAddress,
+    logout
 }
