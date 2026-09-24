@@ -4,28 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { client } from "@/utils/helper";
 import { fetchMyOrders } from "@/utils/api";
+import { toast } from "sonner";
 import { MdCurrencyRupee } from "react-icons/md";
 import { LuSofa } from "react-icons/lu";
-import { FaTable } from "react-icons/fa";
-import { TbArmchair2 } from "react-icons/tb";
 import { HiMenu, HiX } from "react-icons/hi";
 import { IoAddSharp } from "react-icons/io5";
 import MenuItems from "@/components/website/profile/MenuItems";
 
 // ---------- Orders Component ----------
-const OrdersSection = () => {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadOrders() {
-      const res = await fetchMyOrders();
-      setOrders(res.data || []);
-      setLoading(false);
-    }
-    loadOrders();
-  }, []);
-
+const OrdersSection = ({ orders, loading }) => {
   const statusStyles = {
     PLACED: "bg-[#FFF3CD] text-[#856404]",
     PROCESSING: "bg-[#FFF3CD] text-[#856404]",
@@ -108,39 +95,198 @@ const OrdersSection = () => {
 };
 
 // ---------- Personal Info Component ----------
-const PersonalInfoSection = () => (
-  <div className="bg-white border border-[#E8E0D5] rounded-xl p-4 sm:p-5">
-    <div className="text-[13px] font-medium text-[#1E1E1E] mb-4 pb-3 border-b border-[#E8E0D5]">Personal Information</div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-      <div><label className="text-[#6B7280] text-[11px] block mb-1.25">First Name</label><input type="text" placeholder="Madhav" className="w-full py-2.5 px-3 border border-[#E8E0D5] bg-white rounded-md text-[12px] outline-none focus:border-[#8B5E3C]" /></div>
-      <div><label className="text-[#6B7280] text-[11px] block mb-1.25">Last Name</label><input type="text" placeholder="Arora" className="w-full py-2.5 px-3 border border-[#E8E0D5] bg-white rounded-md text-[12px] outline-none focus:border-[#8B5E3C]" /></div>
-      <div><label className="text-[#6B7280] text-[11px] block mb-1.25">Email</label><input type="email" placeholder="aroramadhav2111@gmail.com" className="w-full py-2.5 px-3 border border-[#E8E0D5] bg-white rounded-md text-[12px] outline-none focus:border-[#8B5E3C]" /></div>
-      <div><label className="text-[#6B7280] text-[11px] block mb-1.25">Phone</label><input type="text" placeholder="9955983465" className="w-full py-2.5 px-3 border border-[#E8E0D5] bg-white rounded-md text-[12px] outline-none focus:border-[#8B5E3C]" /></div>
-      <div><label className="text-[#6B7280] text-[11px] block mb-1.25">Date of Birth</label><input type="date" className="w-full py-2.5 px-3 border border-[#E8E0D5] bg-white roundexd-md text-[12px] outline-none focus:border-[#8B5E3C]" /></div>
-      <div><label className="text-[#6B7280] text-[11px] block mb-1.25">Gender</label><select className="w-full py-2.5 px-3 border border-[#E8E0D5] bg-white rounded-md text-[12px] outline-none focus:border-[#8B5E3C]"><option>Male</option><option>Female</option><option>Other</option></select></div>
+const PersonalInfoSection = ({ user, onUpdated }) => {
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    mobile: user?.mobile || "",
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSave = async () => {
+    if (!formData.name || !formData.email) {
+      toast.error("Name and email are required");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await client.put("user/update-profile", formData);
+      if (res.data.success) {
+        toast.success(res.data.message || "Profile updated");
+        onUpdated(res.data.data.user);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-white border border-[#E8E0D5] rounded-xl p-4 sm:p-5">
+      <div className="text-[13px] font-medium text-[#1E1E1E] mb-4 pb-3 border-b border-[#E8E0D5]">Personal Information</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        <div>
+          <label className="text-[#6B7280] text-[11px] block mb-1.25">Full Name</label>
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="w-full py-2.5 px-3 border border-[#E8E0D5] bg-white rounded-md text-[12px] outline-none focus:border-[#8B5E3C]"
+          />
+        </div>
+        <div>
+          <label className="text-[#6B7280] text-[11px] block mb-1.25">Email</label>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full py-2.5 px-3 border border-[#E8E0D5] bg-white rounded-md text-[12px] outline-none focus:border-[#8B5E3C]"
+          />
+        </div>
+        <div>
+          <label className="text-[#6B7280] text-[11px] block mb-1.25">Phone</label>
+          <input
+            type="text"
+            name="mobile"
+            value={formData.mobile}
+            onChange={handleChange}
+            placeholder="9876543210"
+            className="w-full py-2.5 px-3 border border-[#E8E0D5] bg-white rounded-md text-[12px] outline-none focus:border-[#8B5E3C]"
+          />
+        </div>
+      </div>
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="bg-[#8B5E3C] text-[#FFF8F3] text-[11px] tracking-[0.08em] py-2.75 px-5.5 mt-4 rounded-sm font-medium inline-flex items-center disabled:opacity-50"
+      >
+        {saving ? "Saving..." : "Save Changes"}
+      </button>
     </div>
-    <button className="bg-[#8B5E3C] text-[#FFF8F3] text-[11px] tracking-[0.08em] py-2.75 px-5.5 mt-4 rounded-sm font-medium inline-flex items-center">Save Changes</button>
-  </div>
-);
+  );
+};
 
 // ---------- Addresses Component ----------
-const AddressesSection = () => (
-  <div className="bg-white border border-[#E8E0D5] rounded-xl p-4 sm:p-5">
-    <div className="text-[13px] font-medium text-[#1E1E1E] mb-4 pb-3 border-b border-[#E8E0D5]">Saved Addresses</div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-      <div className="border border-[#E8E0D5] rounded-lg p-3.5 relative">
-        <div className="absolute top-2.5 right-2.5 text-[9px] bg-[#F5EDE4] text-[#8B5E3C] py-0.5 px-2 rounded-[10px]">Default</div>
-        <div className="text-[12px] font-medium mb-1.5">Home</div>
-        <div className="text-[11px] text-[#6B7280] leading-[1.6]">42, Malviya Nagar<br />Jaipur, Rajasthan 302018<br />India</div>
-      </div>
-      <div className="border border-[#E8E0D5] rounded-lg p-3.5">
-        <div className="text-[12px] font-medium mb-1.5">Office</div>
-        <div className="text-[11px] text-[#6B7280] leading-[1.6]">Plot 8, Tech Park<br />Sector 18, Gurugram<br />Haryana 122015</div>
-      </div>
+const AddressesSection = ({ addresses, onAdded }) => {
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    mobile: "",
+    pincode: "",
+    addressLine: "",
+    city: "",
+    state: "",
+    country: "India",
+    isDefault: false,
+  });
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = async () => {
+    const { fullName, mobile, pincode, addressLine, city, state } = formData;
+    if (!fullName || !mobile || !pincode || !addressLine || !city || !state) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await client.post("user/add-address", formData);
+      if (res.data.success) {
+        toast.success(res.data.message || "Address added");
+        onAdded(res.data.data.addresses);
+        setShowForm(false);
+        setFormData({
+          fullName: "",
+          mobile: "",
+          pincode: "",
+          addressLine: "",
+          city: "",
+          state: "",
+          country: "India",
+          isDefault: false,
+        });
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to add address");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-white border border-[#E8E0D5] rounded-xl p-4 sm:p-5">
+      <div className="text-[13px] font-medium text-[#1E1E1E] mb-4 pb-3 border-b border-[#E8E0D5]">Saved Addresses</div>
+
+      {addresses.length === 0 ? (
+        <div className="text-[12px] text-[#6B7280] mb-4">No saved addresses yet.</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {addresses.map((addr, index) => (
+            <div key={index} className="border border-[#E8E0D5] rounded-lg p-3.5 relative">
+              {addr.isDefault && (
+                <div className="absolute top-2.5 right-2.5 text-[9px] bg-[#F5EDE4] text-[#8B5E3C] py-0.5 px-2 rounded-[10px]">Default</div>
+              )}
+              <div className="text-[12px] font-medium mb-1.5">{addr.fullName}</div>
+              <div className="text-[11px] text-[#6B7280] leading-[1.6]">
+                {addr.addressLine}<br />
+                {addr.city}, {addr.state} {addr.pincode}<br />
+                {addr.country} · {addr.mobile}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {showForm && (
+        <div className="border border-[#E8E0D5] rounded-lg p-4 mt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Full Name" className="py-2 px-3 border border-[#E8E0D5] rounded-md text-[12px] outline-none focus:border-[#8B5E3C]" />
+            <input name="mobile" value={formData.mobile} onChange={handleChange} placeholder="Mobile Number" className="py-2 px-3 border border-[#E8E0D5] rounded-md text-[12px] outline-none focus:border-[#8B5E3C]" />
+            <input name="addressLine" value={formData.addressLine} onChange={handleChange} placeholder="Address" className="py-2 px-3 border border-[#E8E0D5] rounded-md text-[12px] outline-none focus:border-[#8B5E3C] sm:col-span-2" />
+            <input name="city" value={formData.city} onChange={handleChange} placeholder="City" className="py-2 px-3 border border-[#E8E0D5] rounded-md text-[12px] outline-none focus:border-[#8B5E3C]" />
+            <input name="state" value={formData.state} onChange={handleChange} placeholder="State" className="py-2 px-3 border border-[#E8E0D5] rounded-md text-[12px] outline-none focus:border-[#8B5E3C]" />
+            <input name="pincode" value={formData.pincode} onChange={handleChange} placeholder="Pincode" className="py-2 px-3 border border-[#E8E0D5] rounded-md text-[12px] outline-none focus:border-[#8B5E3C]" />
+            <input name="country" value={formData.country} onChange={handleChange} placeholder="Country" className="py-2 px-3 border border-[#E8E0D5] rounded-md text-[12px] outline-none focus:border-[#8B5E3C]" />
+          </div>
+          <label className="flex items-center gap-2 mt-3 text-[11px] text-[#6B7280]">
+            <input type="checkbox" name="isDefault" checked={formData.isDefault} onChange={handleChange} className="accent-[#8B5E3C]" />
+            Set as default address
+          </label>
+          <div className="flex gap-2 mt-4">
+            <button onClick={handleSubmit} disabled={saving} className="bg-[#8B5E3C] text-[#FFF8F3] text-[11px] py-2 px-4 rounded-sm font-medium disabled:opacity-50">
+              {saving ? "Saving..." : "Save Address"}
+            </button>
+            <button onClick={() => setShowForm(false)} className="text-[#6B7280] text-[11px] py-2 px-4">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!showForm && (
+        <button onClick={() => setShowForm(true)} className="bg-transparent text-[#8B5E3C] text-[11px] tracking-[0.08em] py-2.5 px-5.5 mt-4 border border-[#C6A27E] rounded-sm font-medium inline-flex items-center gap-1.75">
+          <IoAddSharp /> Add New Address
+        </button>
+      )}
     </div>
-    <button className="bg-transparent text-[#8B5E3C] text-[11px] tracking-[0.08em] py-2.5 px-5.5 mt-4 border border-[#C6A27E] rounded-sm font-medium inline-flex items-center gap-1.75"><IoAddSharp /> Add New Address</button>
-  </div>
-);
+  );
+};
 
 // ---------- Settings Component ----------
 const SettingsSection = () => {
@@ -163,14 +309,6 @@ const SettingsSection = () => {
             <div className={`w-4.5 h-4.5 bg-white rounded-full absolute top-0.5 transition-all ${smsAlerts ? "right-0.5" : "left-0.5"}`}></div>
           </div>
         </div>
-        <div className="border border-[#E8E0D5] rounded-lg p-3">
-          <div className="text-[12px] font-medium mb-2">Change Password</div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div><label className="text-[11px] text-[#6B7280] block mb-1.25">Current Password</label><input type="password" placeholder="••••••••" className="w-full py-2.5 px-3 border border-[#E8E0D5] rounded-md text-[12px] bg-white outline-none focus:border-[#8B5E3C]" /></div>
-            <div><label className="text-[11px] text-[#6B7280] block mb-1.25">New Password</label><input type="password" placeholder="••••••••" className="w-full py-2.5 px-3 border border-[#E8E0D5] rounded-md text-[12px] bg-white outline-none focus:border-[#8B5E3C]" /></div>
-          </div>
-          <button className="bg-[#8B5E3C] text-[#FFF8F3] text-[10px] tracking-[0.08em] py-2.5 px-4 mt-4 rounded-sm font-medium">Update Password</button>
-        </div>
       </div>
     </div>
   );
@@ -182,6 +320,9 @@ export default function ProfilePage() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("My Orders");
+  const [user, setUser] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
 
   useEffect(() => {
     async function checkAuth() {
@@ -190,6 +331,7 @@ export default function ProfilePage() {
         if (!res.data.success) {
           router.push("/login");
         } else {
+          setUser(res.data.user);
           setCheckingAuth(false);
         }
       } catch (err) {
@@ -199,16 +341,39 @@ export default function ProfilePage() {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    async function loadOrders() {
+      const res = await fetchMyOrders();
+      setOrders(res.data || []);
+      setOrdersLoading(false);
+    }
+    loadOrders();
+  }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await client.post("user/logout");
+    } catch (error) {
+      console.log("LOGOUT ERROR:", error);
+    } finally {
+      localStorage.removeItem("token");
+      toast.success("Signed out successfully");
+      router.push("/login");
+    }
+  };
+
+  const totalSpent = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+
   const renderContent = () => {
     switch (activeTab) {
-      case "My Orders": return <OrdersSection />;
-      case "Personal Info": return <PersonalInfoSection />;
-      case "Addresses": return <AddressesSection />;
+      case "My Orders": return <OrdersSection orders={orders} loading={ordersLoading} />;
+      case "Personal Info": return <PersonalInfoSection user={user} onUpdated={setUser} />;
+      case "Addresses": return <AddressesSection addresses={user?.addresses || []} onAdded={(addrs) => setUser((prev) => ({ ...prev, addresses: addrs }))} />;
       case "Settings": return <SettingsSection />;
       case "Sign Out":
-        alert("Signing out... (demo)");
-        return <div className="text-center py-10">You have been signed out.</div>;
-      default: return <OrdersSection />;
+        handleSignOut();
+        return <div className="text-center py-10">Signing you out...</div>;
+      default: return <OrdersSection orders={orders} loading={ordersLoading} />;
     }
   };
 
@@ -236,11 +401,17 @@ export default function ProfilePage() {
           <div className="flex flex-col gap-5">
             {/* Stats Cards */}
             <div className="bg-white border border-[#E8E0D5] rounded-xl p-4 sm:p-5">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-[#F8F5F1] rounded-lg p-3 text-center"><div className="text-[18px] sm:text-[20px] text-[#8B5E3C] font-medium mb-1">7</div><div className="text-[9px] sm:text-[10px] text-[#6B7280] tracking-wide">orders</div></div>
-                <div className="bg-[#F8F5F1] rounded-lg p-3 text-center"><div className="text-[18px] sm:text-[20px] text-[#8B5E3C] font-medium mb-1 flex items-center justify-center gap-0"><MdCurrencyRupee />4.2L</div><div className="text-[9px] sm:text-[10px] text-[#6B7280] tracking-wide">spent</div></div>
-                <div className="bg-[#F8F5F1] rounded-lg p-3 text-center"><div className="text-[18px] sm:text-[20px] text-[#8B5E3C] font-medium mb-1">420</div><div className="text-[9px] sm:text-[10px] text-[#6B7280] tracking-wide">points</div></div>
-                <div className="bg-[#F8F5F1] rounded-lg p-3 text-center"><div className="text-[18px] sm:text-[20px] text-[#8B5E3C] font-medium mb-1">3</div><div className="text-[9px] sm:text-[10px] text-[#6B7280] tracking-wide">reviews</div></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-[#F8F5F1] rounded-lg p-3 text-center">
+                  <div className="text-[18px] sm:text-[20px] text-[#8B5E3C] font-medium mb-1">{orders.length}</div>
+                  <div className="text-[9px] sm:text-[10px] text-[#6B7280] tracking-wide">orders</div>
+                </div>
+                <div className="bg-[#F8F5F1] rounded-lg p-3 text-center">
+                  <div className="text-[18px] sm:text-[20px] text-[#8B5E3C] font-medium mb-1 flex items-center justify-center gap-0">
+                    <MdCurrencyRupee />{totalSpent.toLocaleString("en-IN")}
+                  </div>
+                  <div className="text-[9px] sm:text-[10px] text-[#6B7280] tracking-wide">spent</div>
+                </div>
               </div>
             </div>
             {/* Dynamic Content */}
