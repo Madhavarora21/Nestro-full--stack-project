@@ -1,6 +1,21 @@
 import express from "express";
 const router = express.Router();
-import { register, verifyOtp, resendOtp, login, getProfile, forgotPassword, googleLogin, phoneLogin, updateProfile, addAddress, logout } from "../controllers/user.controller.js";
+import {
+    register,
+    verifyOtp,
+    resendOtp,
+    login,
+    getProfile,
+    forgotPassword,
+    googleLogin,
+    phoneLogin,
+    updateProfile,
+  addAddress,
+editAddress,
+setDefaultAddress,
+deleteAddress,
+logout
+} from "../controllers/user.controller.js";
 import { protect } from "../middleware/auth.js";
 router.post("/register", register);
 router.post("/verify-otp", verifyOtp);
@@ -11,8 +26,15 @@ router.post("/forgot-password", forgotPassword)
 router.post("/google-login", googleLogin)
 router.post("/phone-login", phoneLogin)
 router.put("/update-profile", protect, updateProfile)
-router.post("/add-address", protect, addAddress)
-router.post("/logout", protect, logout)
+router.post("/add-address", protect, addAddress);
+
+router.put("/edit-address/:id", protect, editAddress);
+
+router.patch("/default-address/:id", protect, setDefaultAddress);
+
+router.delete("/delete-address/:id", protect, deleteAddress);
+
+router.post("/logout", protect, logout);
 
 
 export default router

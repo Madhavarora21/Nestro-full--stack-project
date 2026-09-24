@@ -5,7 +5,7 @@ import { FaUser, FaLocationDot } from "react-icons/fa6";
 import { IoIosSettings } from "react-icons/io";
 import { MdOutlineLogout } from "react-icons/md";
 
-export default function MenuItems({ activeTab, onTabChange }) {
+export default function MenuItems({ activeTab, onTabChange, user, tier }) {
   const menuItems = [
     { icon: <TbPackage className="text-[15px]" />, label: "My Orders" },
     { icon: <FaUser className="text-[15px]" />, label: "Personal Info" },
@@ -23,15 +23,15 @@ export default function MenuItems({ activeTab, onTabChange }) {
         </div>
 
         <div className="text-[15px] font-medium text-[#1E1E1E] mb-1 capitalize">
-          Madhav Arora
+       {user?.name || "User"}
         </div>
 
         <div className="text-[11px] text-[#6B7280] mb-3">
-          aroramadhav2111@gamil.com
+       {user?.email || ""}
         </div>
 
         <div className="bg-[#F5EDE4] text-[10px] text-[#8B5E3C] py-1 px-3 rounded-full tracking-wide">
-          Gold Member
+        {tier} Member
         </div>
       </div>
 

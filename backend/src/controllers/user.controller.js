@@ -207,7 +207,150 @@ const addAddress = async (req, res) => {
         sendServerError(res, "Internal Server Error");
     }
 };
+const editAddress = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const addressId = req.params.id;
 
+        const {
+            fullName,
+            mobile,
+            pincode,
+            addressLine,
+            city,
+            state,
+            country,
+            isDefault
+        } = req.body;
+
+        const user = await UserModel.findById(userId);
+
+        if (!user) {
+            return sendNotFound(res, "User not found");
+        }
+
+        const address = user.addresses.id(addressId);
+
+        if (!address) {
+            return sendNotFound(res, "Address not found");
+        }
+
+        if (isDefault) {
+            user.addresses.forEach((addr) => {
+                addr.isDefault = false;
+            });
+        }
+
+        address.fullName = fullName;
+        address.mobile = mobile;
+        address.pincode = pincode;
+        address.addressLine = addressLine;
+        address.city = city;
+        address.state = state;
+        address.country = country || "India";
+        address.isDefault = !!isDefault;
+
+        await user.save();
+
+        return sendSuccess(res, "Address updated successfully", {
+            addresses: user.addresses
+        });
+
+    } catch (error) {
+        console.log("EDIT ADDRESS ERROR:", error);
+        sendServerError(res, "Internal Server Error");
+    }
+};
+
+
+const setDefaultAddress = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const addressId = req.params.id;
+
+        const user = await UserModel.findById(userId);
+
+        if (!user) {
+            return sendNotFound(res, "User not found");
+        }
+
+        const address = user.addresses.id(addressId);
+
+        if (!address) {
+            return sendNotFound(res, "Address not found");
+        }
+
+        user.addresses.forEach((addr) => {
+            addr.isDefault = false;
+        });
+
+        address.isDefault = true;
+
+        await user.save();
+
+        return sendSuccess(res, "Default address updated successfully", {
+            addresses: user.addresses
+        });
+
+    } catch (error) {
+        console.log("DEFAULT ADDRESS ERROR:", error);
+        sendServerError(res, "Internal Server Error");
+    }
+};
+const deleteAddress = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const addressId = req.params.id;
+
+        console.log("DELETE ADDRESS REQUEST");
+        console.log("User ID:", userId);
+        console.log("Address ID:", addressId);
+
+        const user = await UserModel.findById(userId);
+
+        if (!user) {
+            return sendNotFound(res, "User not found");
+        }
+
+        const addressExists = user.addresses.some(
+            (address) => address._id.toString() === addressId
+        );
+
+        if (!addressExists) {
+            return sendNotFound(res, "Address not found");
+        }
+
+        const deletedAddress = user.addresses.find(
+            (address) => address._id.toString() === addressId
+        );
+
+        const wasDefault = deletedAddress?.isDefault;
+
+        // Remove address
+        user.addresses = user.addresses.filter(
+            (address) => address._id.toString() !== addressId
+        );
+
+        // If deleted address was default,
+        // make first remaining address default
+        if (wasDefault && user.addresses.length > 0) {
+            user.addresses[0].isDefault = true;
+        }
+
+        await user.save();
+
+        console.log("DELETE SUCCESS");
+        console.log("Remaining addresses:", user.addresses);
+
+        return sendSuccess(res, "Address deleted successfully", {
+            addresses: user.addresses,
+        });
+
+    } catch (error) {
+        console.log("DELETE ADDRESS ERROR:", error);
+        sendServerError(res, "Internal Server Error");
+    }
+};
 const logout = async (req, res) => {
     try {
         res.clearCookie("jwt", {
@@ -329,5 +472,8 @@ export {
     phoneLogin,
     updateProfile,
     addAddress,
+    editAddress,
+    setDefaultAddress,
+    deleteAddress,
     logout
 }
